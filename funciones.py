@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 # número de ciclos a simular
-num_ciclos = 5 
+num_ciclos = 3
 
 # Definición de las funciones para cada fase de la PRESION
 def p1(x, est): #"x" es el tiempo relativo
@@ -22,35 +23,6 @@ def p3(x, est):
         pres_amplitud = (est["P_diast"] - est["P_sist"]) / 2
 
         return pres_media + pres_amplitud * np.sin(-np.pi * (est["Lpm"] / (60 * (5 / 8))) * x - np.pi)
-
-# Función para calcular la presión aórtica en cada instante de tiempo
-def PRESION_AORT(est, T, F, ax):      
-        # Tiempo total para la simulación
-        tiempo_total = np.linspace(0, num_ciclos * T, num_ciclos * 1000)                
-        # Inicializo el array de la presión aórtica
-        presion_aortica = np.zeros_like(tiempo_total)
-
-        # Lleno el array 'presion_aortica' de acuerdo con cada fase en cada ciclo
-        for i in range(len(tiempo_total)):
-                # Ajuste del tiempo relativo al ciclo actual
-                t_relativo = tiempo_total[i] % T
-                if 0 <= t_relativo < T * 3 / 8:
-                        presion_aortica[i] = p1(t_relativo, est)
-                elif T * 3 / 8 <= t_relativo < T * 5 / 8:
-                        presion_aortica[i] = p2(t_relativo, est)
-                else:
-                        presion_aortica[i] = p3(t_relativo, est)
-
-
-        # Graficar en el eje dado
-        ax.plot(tiempo_total, presion_aortica, color="blue", linewidth=2, label="Presión Aórtica (Simulada)")
-        ax.set_xlabel("Tiempo (s)", fontsize=12)
-        ax.set_ylabel("Presión (mmHg)", fontsize=12)
-        ax.set_title("Simulación de la Presión Aórtica en Varios Ciclos", fontsize=14)
-        ax.legend(loc="upper right", fontsize=10)
-        ax.grid(True, linestyle="--", alpha=0.7)
-        ax.set_ylim(0, 200)
-
 
 
 # Definición de las funciones para cada fase del VOLUMEN
@@ -73,61 +45,81 @@ def v4(x, est, T):
         return vol_medio - (v3(T * (5/8), est, T) + 80) * np.exp(-30 * (x - T * (4.5/8)))
 
 
-#Funcion para calcular el volumen ventricular en cada instante de tiempo
-def VOLUMEN_VENT(est, T, F, ax):
-        # tiempo total para la simulacion
-        tiempo_total = np.linspace(0, num_ciclos * T, num_ciclos * 1000)
+#Graficar las funciones de presion y volumen
 
-        #Inicializar el array del volumen ventricular
-        volumen_ventricular = np.zeros_like(tiempo_total)
-                
-        # Llenar el array 'volumen_ventricular' de acuerdo con cada fase en cada ciclo
-        for i in range(len(tiempo_total)):
-                # Calcular el tiempo en el ciclo actual (modulo T)
-                tiempo_ciclo = tiempo_total[i] % T
+def animar(i, est, T, ax1, ax2, tiempo_total, presion_aortica, volumen_ventricular, paso=10):
+    # Usamos un "paso" para saltar algunos puntos y reducir la carga
+    indice_inicio = i * paso
+    indice_fin = (i + 1) * paso
 
-                if 0 <= tiempo_ciclo < T * (2/8):
-                      volumen_ventricular[i] = v1(tiempo_ciclo, est, T)
+    # Calcular presión aórtica y volumen solo para el intervalo actual
+    for j in range(indice_inicio, indice_fin):
+        if j < len(tiempo_total):
+            t_relativo = tiempo_total[j] % T
+            
+            # Presión aórtica
+            if 0 <= t_relativo < T * 3 / 8:
+                presion_aortica[j] = p1(t_relativo, est)
+            elif T * 3 / 8 <= t_relativo < T * 5 / 8:
+                presion_aortica[j] = p2(t_relativo, est)
+            else:
+                presion_aortica[j] = p3(t_relativo, est)
 
-                elif T * (2/8) <= tiempo_ciclo < T * (2.5/8):
-                       volumen_ventricular[i] = v2(tiempo_ciclo, est, T)
+            # Volumen ventricular
+            tiempo_ciclo = tiempo_total[j] % T
+            if 0 <= tiempo_ciclo < T * (2/8):
+                volumen_ventricular[j] = v1(tiempo_ciclo, est, T)
+            elif T * (2/8) <= tiempo_ciclo < T * (2.5/8):
+                volumen_ventricular[j] = v2(tiempo_ciclo, est, T)
+            elif T * (2.5/8) <= tiempo_ciclo < T * (5/8):
+                volumen_ventricular[j] = v3(tiempo_ciclo, est, T)
+            else:
+                volumen_ventricular[j] = v4(tiempo_ciclo, est, T)
 
-                elif T * (2.5/8) <= tiempo_ciclo < T * (5/8):
-                        volumen_ventricular[i] = v3(tiempo_ciclo, est, T)
+    # Limpiar y volver a graficar usando solo hasta el índice actual
+    ax1.clear()
+    ax1.plot(tiempo_total[:indice_fin], presion_aortica[:indice_fin], color="blue", linewidth=2, label="Presión Aórtica (Simulada)")
+    ax1.set_xlabel("Tiempo (s)")
+    ax1.set_ylabel("Presión (mmHg)")
+    ax1.set_title("Simulación de la Presión Aórtica")
+    ax1.legend(loc="upper right")
+    ax1.grid(True, linestyle="--", alpha=0.7)
+    ax1.set_ylim(0, 200)
+    
+    ax2.clear()
+    ax2.plot(tiempo_total[:indice_fin], volumen_ventricular[:indice_fin], color="purple", linewidth=2, label="Volumen Ventricular (Simulado)")
+    ax2.set_xlabel("Tiempo (s)")
+    ax2.set_ylabel("Volumen (mL)")
+    ax2.set_title("Simulación del Volumen Ventricular")
+    ax2.legend(loc="upper right")
+    ax2.grid(True, linestyle="--", alpha=0.7)
+    ax2.set_ylim(0, 180)
 
-                elif T * (5/8) <= tiempo_ciclo < T:
-                       volumen_ventricular[i] = v4(tiempo_ciclo, est, T)
-                
-        # Graficar en el eje dado
-        ax.plot(tiempo_total, volumen_ventricular, color="purple", linewidth=2, label="Volumen Ventricular (Simulado)")
-        # Cambia el color de fondo
-        ax.set_facecolor("#F5F5DC")
-        # Personaliza los textos con color y tamaño
-        ax.set_xlabel("Tiempo (s)", fontsize=14, color="#008B8B") 
-        ax.set_ylabel("Volumen (mL)", fontsize=14, color="#008B8B")
-        ax.set_title("Simulación del Volumen Ventricular - 5 Ciclos", fontsize=16, color = "#800080")
-        ax.legend(loc="upper right", fontsize=10, frameon=True, facecolor="#e8eaf6")
-        ax.grid(True, linestyle="--", color="#cfd8dc", alpha=0.7)
-        ax.set_ylim(0, 180)
-
-
-
-
+# Configuración de la animación principal
 def Principal(est):
-    #Parámetros
     if est["Estado"] == "Muerte":
-            T= 60/60
+        T = 60/60
     else:
-            T = 60 / est["Lpm"]  # periodo total en segundos
-    F = est["Lpm"] / 60  # frecuencia en hz
+        T = 60 / est["Lpm"]  # Periodo total en segundos
+
+    tiempo_total = np.linspace(0, num_ciclos * T, num_ciclos * 500)  # Reducir puntos totales
+    presion_aortica = np.zeros_like(tiempo_total)
+    volumen_ventricular = np.zeros_like(tiempo_total)
 
     # Crear figura y subgráficos
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    # Configurar animación
+    anim = FuncAnimation(
+        fig,
+        animar,
+        frames=len(tiempo_total) // 100,  # Dividir en intervalos de 10 para avanzar más rápido
+        fargs=(est, T, ax1, ax2, tiempo_total, presion_aortica, volumen_ventricular),
+        interval=10,
+        repeat=False
+    )
+
+    plt.tight_layout()
+    plt.show()
+
     
-    # Llamar a las funciones de presión y volumen, pasando cada eje
-    PRESION_AORT(est, T, F, ax1)
-    VOLUMEN_VENT(est, T, F, ax2)
-    
-    # Ajustar el diseño y mostrar la figura completa
-    plt.tight_layout()  # Asegurarse de que la distribución de los subgráficos no se solape
-    plt.show()  # Mostrar los gráficos de forma correcta

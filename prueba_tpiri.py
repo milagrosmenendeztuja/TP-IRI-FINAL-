@@ -66,7 +66,7 @@ est7 = {
 }
 
 
-print("\n VAMOS A GRAFICAR TU PRESION Y VOLUMEN VENTRICULAR:")
+print("\nVAMOS A GRAFICAR TU PRESION Y VOLUMEN VENTRICULAR:")
 while True:
         print("Elija el estado del paciente")
         print("1. Reposo ")
@@ -76,6 +76,7 @@ while True:
         print("5. Arritmia (bradicardia)")
         print("6. Durmiendo")
         print("7. Muerte")
+        print("Presione enter para salir")
         
         opcion = input("Seleccione una opción: ")
         
