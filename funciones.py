@@ -4,6 +4,7 @@ from matplotlib.animation import FuncAnimation
 
 # número de ciclos a simular
 num_ciclos = 5
+paso = 50
 
 # Definición de las funciones para cada fase de la PRESION
 def p1(x, est): #"x" es el tiempo relativo
@@ -47,7 +48,7 @@ def v4(x, est, T):
 
 #Graficar las funciones de presion y volumen
 
-def animar(i, est, T, ax1, ax2, tiempo_total, presion_aortica, volumen_ventricular, paso=50):
+def animar(i, est, T, ax1, ax2, tiempo_total, presion_aortica, volumen_ventricular):
     # Usamos un "paso" para saltar algunos puntos y reducir la carga
     indice_inicio = i * paso
     indice_fin = (i + 1) * paso
@@ -102,7 +103,7 @@ def Principal(est):
     else:
         T = 60 / est["Lpm"]  # Periodo total en segundos
 
-    tiempo_total = np.linspace(0, num_ciclos * T, num_ciclos * 500)  # Reducir puntos totales
+    tiempo_total = np.linspace(0, num_ciclos * T, num_ciclos * 1000)  # Reducir puntos totales
     presion_aortica = np.zeros_like(tiempo_total)
     volumen_ventricular = np.zeros_like(tiempo_total)
 
@@ -113,9 +114,9 @@ def Principal(est):
     anim = FuncAnimation(
         fig,
         animar,
-        frames=len(tiempo_total) // 200,  # Dividir en intervalos de 10 para avanzar más rápido
+        frames=len(tiempo_total) // paso,  # Dividir en intervalos de 10 para avanzar más rápido
         fargs=(est, T, ax1, ax2, tiempo_total, presion_aortica, volumen_ventricular),
-        interval=50,
+        interval=30,
         repeat=False
     )
 
