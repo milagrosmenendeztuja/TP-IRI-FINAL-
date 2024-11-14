@@ -31,28 +31,28 @@ est3 ={
 
 est4 = {
      "Estado" : "Fibrilacion",
-     "Lpm" :  "",
-     "P_diast" : "",
-     "P_sist" : "",
-     "V_diast" : "",
-     "V_sist" : "",
+     "Lpm" :  np.random.randint(160,180),
+     "P_diast" : 170,
+     "P_sist" : 100,
+     "V_diast" : 170,
+     "V_sist" : 80,
 }
 
 est5 = {
      "Estado" : "Arritmia",
-     "Lpm" : 70,
-     "P_diast" : 120,
-     "P_sist" : 80,
-     "V_diast" : 130,
+     "Lpm" : np.random.randint(35,50),
+     "P_diast" : 100,
+     "P_sist" : 50,
+     "V_diast" : 110,
      "V_sist" : 50,
 }
 
 est6= {
     "Estado" : "Durmiendo",
     "Lpm" : 50,
-     "P_diast" : 120,
-     "P_sist" : 80,
-     "V_diast" : 130,
+     "P_diast" : 100,
+     "P_sist" : 50,
+     "V_diast" : 110,
      "V_sist" : 50,
 }
 
@@ -73,7 +73,7 @@ while True:
         print("2. Trotando")
         print("3. Corriendo")
         print("4. Fibrilacion")
-        print("5. Arritmia (brabicardia)")
+        print("5. Arritmia (bradicardia)")
         print("6. Durmiendo")
         print("7. Muerte")
         
