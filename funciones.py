@@ -4,6 +4,7 @@ from matplotlib.animation import FuncAnimation
 
 # número de ciclos a simular
 num_ciclos = 5
+# paso para los graficos
 paso = 50
 
 # Definición de las funciones para cada fase de la PRESION
@@ -46,14 +47,15 @@ def v4(x, est, T):
         return vol_medio - (v3(T * (5/8), est, T) + 80) * np.exp(-30 * (x - T * (4.5/8)))
 
 
-#Graficar las funciones de presion y volumen
+#Grafico las funciones de presion y volumen
 
-def animar(i, est, T, ax1, ax2, tiempo_total, presion_aortica, volumen_ventricular):
-    # Usamos un "paso" para saltar algunos puntos y reducir la carga
+def Graficar(i, est, T, ax1, ax2, tiempo_total, presion_aortica, volumen_ventricular):
+    
+    # se usa un "paso" para saltar algunos puntos y reducir la carga
     indice_inicio = i * paso
     indice_fin = (i + 1) * paso
 
-    # Calcular presión aórtica y volumen solo para el intervalo actual
+    # Calculo presión aórtica y volumen solo para el intervalo actual
     for j in range(indice_inicio, indice_fin):
         if j < len(tiempo_total):
             t_relativo = tiempo_total[j] % T
@@ -77,43 +79,50 @@ def animar(i, est, T, ax1, ax2, tiempo_total, presion_aortica, volumen_ventricul
             else:
                 volumen_ventricular[j] = v4(tiempo_ciclo, est, T)
 
-    # Limpiar y volver a graficar usando solo hasta el índice actual
+    
     ax1.clear()
-    ax1.plot(tiempo_total[:indice_fin], presion_aortica[:indice_fin], color="blue", linewidth=2, label="Presión Aórtica (Simulada)")
-    ax1.set_xlabel("Tiempo (s)")
-    ax1.set_ylabel("Presión (mmHg)")
-    ax1.set_title("Simulación de la Presión Aórtica")
+    ax1.set_facecolor("#f0f0f0") 
+    ax1.plot(tiempo_total[:indice_fin], presion_aortica[:indice_fin], color="blue", linewidth=2, label="Presión Aórtica")
+    ax1.set_xlabel("Tiempo (s)", color="darkblue")
+    ax1.set_ylabel("Presión (mmHg)", color="darkblue")  
+    ax1.set_title("Simulación de la Presión Aórtica", color="darkblue") 
     ax1.legend(loc="upper right")
     ax1.grid(True, linestyle="--", alpha=0.7)
     ax1.set_ylim(0, 200)
     
     ax2.clear()
-    ax2.plot(tiempo_total[:indice_fin], volumen_ventricular[:indice_fin], color="purple", linewidth=2, label="Volumen Ventricular (Simulado)")
-    ax2.set_xlabel("Tiempo (s)")
-    ax2.set_ylabel("Volumen (mL)")
-    ax2.set_title("Simulación del Volumen Ventricular")
+    ax2.set_facecolor("#fff4e0")  
+    ax2.plot(tiempo_total[:indice_fin], volumen_ventricular[:indice_fin], color="purple", linewidth=2, label="Volumen Ventricular")
+    ax2.set_xlabel("Tiempo (s)", color="purple")  
+    ax2.set_ylabel("Volumen (mL)", color="purple") 
+    ax2.set_title("Simulación del Volumen Ventricular", color="purple") 
     ax2.legend(loc="upper right")
     ax2.grid(True, linestyle="--", alpha=0.7)
     ax2.set_ylim(0, 180)
 
-# Configuración de la animación principal
+# funcion principal donde se llaman los graficos
 def Principal(est):
+
     if est["Estado"] == "Muerte":
         T = 60/60
     else:
         T = 60 / est["Lpm"]  # Periodo total en segundos
 
-    tiempo_total = np.linspace(0, num_ciclos * T, num_ciclos * 1000)  # Reducir puntos totales
+    tiempo_total = np.linspace(0, num_ciclos * T, num_ciclos * 1000)
+
     presion_aortica = np.zeros_like(tiempo_total)
     volumen_ventricular = np.zeros_like(tiempo_total)
 
-    # Crear figura y subgráficos
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    # Creo figura y subgráficos
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+
+    # Imprimo que estado se esta graficando
+    fig.text(0.5, 0.95, f"Estado: {est['Estado']}", ha='center', va='top', fontsize=14, color="Lightblue")
 
     # Configurar animación
     anim = FuncAnimation(
         fig,
-        animar,
+        Graficar,
         frames=len(tiempo_total) // paso,  # Dividir en intervalos de 10 para avanzar más rápido
         fargs=(est, T, ax1, ax2, tiempo_total, presion_aortica, volumen_ventricular),
         interval=30,
