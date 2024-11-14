@@ -191,8 +191,11 @@ def VOLUMEN_VENT(est, T, F, ax):
 
 
 def Principal(est):
-      # Parámetros
-    T = 60 / est["Lpm"]  # periodo total en segundos
+    #Parámetros
+    if est["Estado"] == "Muerte":
+            T= 60/60
+    else:
+            T = 60 / est["Lpm"]  # periodo total en segundos
     F = est["Lpm"] / 60  # frecuencia en hz
 
     # Crear figura y subgráficos
