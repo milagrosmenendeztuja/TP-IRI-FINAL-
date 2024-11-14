@@ -31,37 +31,49 @@ def p3(x, est):
 
 # Función para calcular la presión aórtica en cada instante de tiempo
 def PRESION_AORT(est, T, F, ax):
-        if est["Estado"] == "Arritmia":
+         if est["Estado"] == "Arritmia":
                 presion_aortica = []
                 tiempo_total = []
         
+        # Genera variación en LPM para la arritmia
                 lpm_variado = generar_lpm_variado(est["Lpm"], num_ciclos)
         
+        # Para cada ciclo y variación en LPM
                 for ciclo, lpm in enumerate(lpm_variado):
                         T = 60 / lpm  # recalcular T para cada LPM
                         tiempo_ciclo = np.linspace(ciclo * T, (ciclo + 1) * T, 1000)
 
-                        for t in tiempo_ciclo:
-                                t_relativo = t % T
-                                if 0 <= t_relativo < T * (3 / 8):
-                                        presion_aortica.append(p1(t_relativo, est))
-                                elif T * (3 / 8) <= t_relativo < T * (5 / 8):
-                                        presion_aortica.append(p2(t_relativo, est))
+            # Calcular presión en cada fase del ciclo
+                for t in tiempo_ciclo:
+                        t_relativo = t % T
+                        if 0 <= t_relativo < T * (3 / 8):
+                                presion_aortica.append(p1(t_relativo, est))
+                        elif T * (3 / 8) <= t_relativo < T * (5 / 8):
+                                presion_aortica.append(p2(t_relativo, est))
                         else:
                                 presion_aortica.append(p3(t_relativo, est))
-                        tiempo_total.append(t)
-                
+
+                # Asegurarse de que tiempo_total tenga la misma cantidad de valores que presion_aortica
+                tiempo_total.append(t)
+
+        # Verificación de dimensiones
+                if len(tiempo_total) != len(presion_aortica):
+                        print("Error: Las dimensiones de tiempo_total y presion_aortica no coinciden.")
+                        print(f"Dimensiones -> tiempo_total: {len(tiempo_total)}, presion_aortica: {len(presion_aortica)}")
+                return  # Salir si hay un error en las dimensiones
+
+        # Graficar presión con el mismo número de puntos en tiempo_total y presion_aortica
                 ax.plot(tiempo_total, presion_aortica, color="blue", linewidth=2, label="Presión Aórtica (Simulada con Arritmia)")
-                # Cambia el color de fondo
+        
+                # Decoración del gráfico
                 ax.set_facecolor("#F5F5DC")
-                # Personaliza los textos con color y tamaño
-                ax.set_xlabel("Tiempo (s)", fontsize=14, color="#008B8B") 
+                ax.set_xlabel("Tiempo (s)", fontsize=14, color="#008B8B")
                 ax.set_ylabel("Presión (mmHg)", fontsize=14, color="#008B8B")
-                ax.set_title("Simulación de la Presión Aórtica con Arritmia", fontsize=14, color = "#800080")
+                ax.set_title("Simulación de la Presión Aórtica con Arritmia", fontsize=14, color="#800080")
                 ax.legend(loc="upper right", fontsize=10)
                 ax.grid(True, linestyle="--", color="#cfd8dc", alpha=0.7)
                 ax.set_ylim(0, 200)
-
+                
         else:
                 # Tiempo total para la simulación
                 tiempo_total = np.linspace(0, num_ciclos * T, num_ciclos * 1000)
@@ -142,6 +154,7 @@ def VOLUMEN_VENT(est, T, F, ax):
                                         volumen_ventricular.append(v4(t_relativo, est, T))
                 
                                 tiempo_total.append(t)
+                                tiempo_total.extend(tiempo_ciclo)
 
                 ax.plot(tiempo_total, volumen_ventricular, color="purple", linewidth=2, label="Volumen Ventricular (Simulado)")
                 ax.set_xlabel("Tiempo (s)", fontsize=12)
